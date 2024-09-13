@@ -1,0 +1,56 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Chat";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to the Chat App</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="container">
+    <div>
+        <label>Your Name:</label>
+        <input type="text" id="displayName" />
+    </div>
+
+    <div class="mt-5">
+        <input type="text" id="message" />
+        <input type="button" id="sendmessage" value="Send" />
+    </div>
+
+    <div class="mt-3">
+        <ul id="discussion"></ul>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chat")
+            .build();
+
+        connection.on("ReceiveMessage", function (user, message) {
+            const msg = user + ": " + message;
+            const li = document.createElement("li");
+            li.textContent = msg;
+            document.getElementById("discussion").appendChild(li);
+        });
+
+        document.getElementById("sendmessage").addEventListener("click", function (event) {
+            const user = document.getElementById("displayName").value;
+            const message = document.getElementById("message").value;
+            connection.invoke("SendMessage", user, message).catch(function (err) {
+                return console.error(err.toString());
+            });
+            event.preventDefault();
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+</script>
